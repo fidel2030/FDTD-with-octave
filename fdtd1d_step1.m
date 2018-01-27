@@ -54,9 +54,9 @@ Hx = zeros(1, Nz);
 for T = 1 : STEPS
   % Update H from E
   for nz = 1: Nz-1
-      Hz(nz) = Hx(nz) + mHx(nz)*( Ey(nz+1) - Ey(nz))/dz;
+      Hx(nz) = Hx(nz) + mHx(nz)*( Ey(nz+1) - Ey(nz))/dz;
   endfor
-  Hz(Nz) = Hx(Nz) + mHx(Nz)*( 0 - Ey(Nz))/dz;
+  Hx(Nz) = Hx(Nz) + mHx(Nz)*( 0 - Ey(Nz))/dz;
   %Update E from H
   Ey(1) = Ey(1) + mEy(1)*(Hx(1) - 0)/dz;
   for nz = 2 : Nz

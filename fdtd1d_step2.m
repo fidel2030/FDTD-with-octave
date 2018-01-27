@@ -44,7 +44,7 @@ dz = lam0 / nmax / NLAM;
 Nz = sum(NBUFZ) + 3; %number of point on the grid
 
 % Comupute Grid Axis
-za = [0:Nz-1] * dz;
+za = [0:Nz-1] * dz; %grid axis
 
 %%%%%% Buid device on grid %%%%%
 %initialize material to free space
@@ -67,7 +67,7 @@ STEPS = ceil(t/dt); %rounded total number of steps
 
 %Compute the source
 t = [0:STEPS-1]*dt; %time axis (reused variable t)
-nz_src = round(Nz/2);
+nz_src = round(Nz/2); %position of the source
 Esrc = exp(-((t- t0)/tau).^2);
 
 %%%% Initialize FDTD parameters %%%%%%
@@ -82,27 +82,27 @@ Hx = zeros(1, Nz);
 
 %%%% Perform FDTD Analysis %%%%%
 %%% Main Loop
-for T = 1 : STEPS
+for T = 1 :  STEPS
   % Update H from E
   for nz = 1: Nz-1
-    Hz(nz) = Hx(nz) + mHx(nz)*( Ey(nz+1) - Ey(nz))/dz;
-  endfor
-  Hz(Nz) = Hx(Nz) + mHx(Nz)*( 0 - Ey(Nz))/dz;
+    Hx(nz) = Hx(nz) + mHx(nz)*( Ey(nz+1) - Ey(nz))/dz;
+  end
+  Hx(Nz) = Hx(Nz) + mHx(Nz)*( 0 - Ey(Nz))/dz;
   %Update E from H
   Ey(1) = Ey(1) + mEy(1)*(Hx(1) - 0)/dz;
   for nz = 2 : Nz
     Ey(nz) = Ey(nz) + mEy(nz)*(Hx(nz) - Hx(nz-1))/dz;
-  endfor
+  end
   
   %inject source
   Ey(nz_src) = Ey(nz_src) + Esrc(T);
   
   %Show status
-  if ~mod(T,10)
+  if ~mod(T,5)
     %show fields
     %draw1d(ER, Ey, Hz, dz);
     hor_axis = dz:dz:Nz*dz;
-    plot(hor_axis, Ey, hor_axis, Hx);
+    plot(za, Ey, 'b', za, Hx, 'r', linewidth=2);
     xlim([dz Nz*dz]);
     xlabel('z');
     title(['Field at step ' num2str(T) ' of ' num2str(STEPS)]);

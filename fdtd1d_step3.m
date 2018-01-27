@@ -32,7 +32,7 @@ fmax = 5.0 * gigahertz;
 
 %Grid Parameters
 nmax = 1; %max refraction index
-NLAM = 10; % grid resolution of ten points
+NLAM = 40; % grid resolution of ten points
 NBUFZ = [100 100]; %buffer zone, 100 points before and after.
 
 %%%%% Compute opimized grid %%%%%%
@@ -78,7 +78,9 @@ mHx = (c0*dt)./UR;
 %Initialize fields
 Ey = zeros(1, Nz);
 Hx = zeros(1, Nz);
-
+%initialize boundary conditions
+H1=0; H2=0; H3=0;
+E1=0; E2=0; E3=0;
 
 %%%% Perform FDTD Analysis %%%%%
 %%% Main Loop
@@ -87,21 +89,29 @@ for T = 1 :  STEPS
   for nz = 1: Nz-1
     Hx(nz) = Hx(nz) + mHx(nz)*( Ey(nz+1) - Ey(nz))/dz;
   end
-  Hx(Nz) = Hx(Nz) + mHx(Nz)*( 0 - Ey(Nz))/dz;
+  Hx(Nz) = Hx(Nz) + mHx(Nz)*( E3 - Ey(Nz))/dz;
+  %Record H-field at boundary conditions
+  H3 = H2;
+  H2 = H1;
+  H1 = Hx(1);
+  
   %Update E from H
-  Ey(1) = Ey(1) + mEy(1)*(Hx(1) - 0)/dz;
+  Ey(1) = Ey(1) + mEy(1)*(Hx(1) - H3)/dz;
   for nz = 2 : Nz
     Ey(nz) = Ey(nz) + mEy(nz)*(Hx(nz) - Hx(nz-1))/dz;
   end
   
   %inject source
   Ey(nz_src) = Ey(nz_src) + Esrc(T);
+ %Record E-field at boundary contition
+  E3 = E2;
+  E2 = E1;
+  E1 = Ey(Nz);
   
   %Show status
-  if ~mod(T,5)
+  if ~mod(T,10)
     %show fields
     %draw1d(ER, Ey, Hz, dz);
-    hor_axis = dz:dz:Nz*dz;
     plot(za, Ey, 'b', za, Hx, 'r', linewidth=2);
     xlim([dz Nz*dz]);
     xlabel('z');
